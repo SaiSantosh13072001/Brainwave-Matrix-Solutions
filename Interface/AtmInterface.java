@@ -1,16 +1,30 @@
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class AtmInterface {
 
     private static double balance = 100000.0; // Initial balance
+    private static final int PIN = 1234; // Default PIN for authentication
+    private static List<String> transactionHistory = new ArrayList<>();
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        int choice;
+        
+        if (!authenticateUser(scanner)) {
+            System.out.println("Authentication failed. Exiting...");
+            scanner.close();
+            return;
+        }
 
+        int choice;
         do {
             displayMenu();
             System.out.print("Enter your choice: ");
+            while (!scanner.hasNextInt()) {
+                System.out.println("Invalid input! Please enter a number.");
+                scanner.next();
+            }
             choice = scanner.nextInt();
 
             switch (choice) {
@@ -24,14 +38,23 @@ public class AtmInterface {
                     depositMoney(scanner);
                     break;
                 case 4:
-                    System.out.println("Thank you for using the ATM. Have a nice day, Goodbye!");
+                    viewTransactionHistory();
+                    break;
+                case 5:
+                    System.out.println("Thank you for using the ATM. Have a nice day! Goodbye!");
                     break;
                 default:
                     System.out.println("Invalid choice. Please try again.");
             }
-        } while (choice != 4);
+        } while (choice != 5);
 
         scanner.close();
+    }
+
+    private static boolean authenticateUser(Scanner scanner) {
+        System.out.print("Enter your 4-digit PIN: ");
+        int enteredPin = scanner.nextInt();
+        return enteredPin == PIN;
     }
 
     private static void displayMenu() {
@@ -39,7 +62,8 @@ public class AtmInterface {
         System.out.println("1. Check Balance");
         System.out.println("2. Withdraw Money");
         System.out.println("3. Deposit Money");
-        System.out.println("4. Exit");
+        System.out.println("4. View Transaction History");
+        System.out.println("5. Exit");
     }
 
     private static void checkBalance() {
@@ -56,6 +80,7 @@ public class AtmInterface {
             System.out.println("Invalid amount. Please enter a positive value.");
         } else {
             balance -= amount;
+            transactionHistory.add("Withdrawn: $" + amount);
             System.out.printf("You have withdrawn $%.2f. Your new balance is $%.2f%n", amount, balance);
         }
     }
@@ -68,7 +93,19 @@ public class AtmInterface {
             System.out.println("Invalid amount. Please enter a positive value.");
         } else {
             balance += amount;
+            transactionHistory.add("Deposited: $" + amount);
             System.out.printf("You have deposited $%.2f. Your new balance is $%.2f%n", amount, balance);
+        }
+    }
+
+    private static void viewTransactionHistory() {
+        if (transactionHistory.isEmpty()) {
+            System.out.println("No transactions found.");
+        } else {
+            System.out.println("Transaction History:");
+            for (String transaction : transactionHistory) {
+                System.out.println(transaction);
+            }
         }
     }
 }
